@@ -1,31 +1,53 @@
-"""Main class for Order Book project"""
+"""Main module for Order Book project"""
 
+from collections import namedtuple
 import copy
 from typing import Dict, List, Union
+
+from order_book.exceptions import (
+    InvalidDepthException, ParamTypeException, ParamValueException, NoElementException, TradeTypeOverflowedException,
+)
+
+
+TradeTypes = namedtuple('TradeType', ['asks', 'bids'])
+TradeType = TradeTypes('asks', 'bids')
 
 
 class OrderBook:
     """Describes an order book data type"""
 
-    offer_id: int = 0
-
-    asks: dict = {}
-    bids: dict = {}
-
-    def __init__(self, depth: int = 20):
+    def __init__(self, depth: int = 20) -> None:
         """
         Init a new order book.
+        If depth is zero or negative - throws InvalidDepthException
 
         :param depth: size of order book. Default value: 20
         :type: Integer
         """
-        self.depth = depth
+        if depth <= 0:
+            raise InvalidDepthException
 
-    def add_offer(self, trade_type: str, price: Union[int, float], quantity: int) -> Union[int, str]:
+        self.depth: int = depth
+        self.offer_id : int = 0
+
+        self.asks: dict = {}
+        self.bids: dict = {}
+
+        self.relations = {
+            TradeType.asks: self.asks,
+            TradeType.bids: self.bids
+        }
+
+    def add_offer(
+        self,
+        trade_type: str = None,
+        price: Union[int, float] = None,
+        quantity: int = None
+        ) -> Union[int, str]:
         """
         Add offer in the order book.
 
-        :param trade_type: a type of trade, where the offer will be placed. Available trade types: ask, bid
+        :param trade_type: a type of trade, where the offer will be placed. Available trade types: asks, bids
         :type: String
 
         :param price: offer price
@@ -38,42 +60,38 @@ class OrderBook:
         :rtype: [Integer, String]
         """
         if type(price) not in {int, float}:
-            return 'price must be integer or float'
+            raise ParamTypeException
 
         elif type(quantity) != int:
-            return 'quantity must be integer'
+            raise ParamTypeException
+
+        if price <= 0:
+            raise ParamValueException
+
+        if quantity <= 0:
+            raise ParamValueException
+
+        if len(self.asks) == self.depth:
+                raise TradeTypeOverflowedException
+
+        if len(self.bids) == self.depth:
+                raise TradeTypeOverflowedException
 
         market_lot = {
             'price': price,
             'quantity': quantity,
         }
 
-        if trade_type == 'ask':
+        try:
+            self.relations[trade_type][self.offer_id] = market_lot
+            self.offer_id += 1
 
-            if len(self.asks) == self.depth:
-                return 'asks list is overflowed'
+            return self.offer_id
 
-            else:
-                self.offer_id += 1
-                self.asks[self.offer_id] = market_lot
+        except KeyError:
+            raise ParamValueException
 
-                return self.offer_id
-
-        elif trade_type == 'bid':
-
-            if len(self.bids) == self.depth:
-                return 'bids list is overflowed'
-
-            else:
-                self.offer_id += 1
-                self.bids[self.offer_id] = market_lot
-
-                return self.offer_id
-
-        else:
-            return 'trade_type must be "ask" or "bid"'
-
-    def purge_offer(self, item_id: int) -> Union[None, str]:
+    def purge_offer(self, item_id: int = None) -> Union[None, str]:
         """
         Purge offer from the order book by its id
 
@@ -84,18 +102,18 @@ class OrderBook:
         :rtype: [None, String]
         """
         if type(item_id) != int:
-            return f'item_id must be integer'
+            raise ParamTypeException
 
         if item_id in self.asks.keys():
-            self.asks.pop(item_id)
+            return self.asks.pop(item_id)
 
         elif item_id in self.bids.keys():
-            self.bids.pop(item_id)
+            return self.bids.pop(item_id)
 
         else:
-            return f'There is no offer with id={item_id}'
+            raise NoElementException
 
-    def get_offers_data(self, item_id) -> Dict[str, Union[int, float]]:
+    def get_offers_data(self, item_id: int = None) -> Dict[str, Union[int, float]]:
         """
         Return data of one offer from the order book.
 
@@ -103,7 +121,7 @@ class OrderBook:
         :type: Integer
         """
         if type(item_id) != int:
-            return f'item_id must be integer'
+            raise ParamTypeException
 
         if item_id in self.asks.keys():
             return self.asks.get(item_id)
@@ -112,7 +130,7 @@ class OrderBook:
             return self.bids.get(item_id)
 
         else:
-            return f'There is no offer with id={item_id}'
+            raise NoElementException
 
     def get_market_snapshot(self) -> Dict[str, List[Dict[str, Union[int, float]]]]:
         """
@@ -131,8 +149,8 @@ class OrderBook:
         sorted_bids_lots = sorted(bids_lots, key=lambda x: x['price'])
 
         market_snapshot = {
-            'asks': sorted_asks_lots,
-            'bids': sorted_bids_lots,
+            TradeType.asks: sorted_asks_lots,
+            TradeType.bids: sorted_bids_lots,
         }
 
         return market_snapshot
