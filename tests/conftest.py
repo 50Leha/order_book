@@ -1,3 +1,5 @@
+from random import randint
+
 import pytest
 
 from order_book.depth_of_market import OrderBook
@@ -6,6 +8,7 @@ from order_book.depth_of_market import OrderBook
 @pytest.fixture
 def new_order_book() -> OrderBook:
     """
+    Common fixture
     Create new order book
 
     :return: new object of OrderBook
@@ -19,6 +22,7 @@ def new_order_book() -> OrderBook:
 @pytest.fixture
 def order_book_with_ask_offer() -> OrderBook:
     """
+    Unit fixture
     Create new order book and fill it up with new ask offer
 
     :return: new object of OrderBook
@@ -35,6 +39,7 @@ def order_book_with_ask_offer() -> OrderBook:
 @pytest.fixture
 def order_book_with_bid_offer() -> OrderBook:
     """
+    Unit fixture
     Create new order book and fill it up with new bid offer
 
     :return: new object of OrderBook
@@ -51,7 +56,8 @@ def order_book_with_bid_offer() -> OrderBook:
 @pytest.fixture
 def order_book_with_both_offers() -> OrderBook:
     """
-    Create new order book and fill it up with new ask and bid offers
+    Unit fixture
+    Create new order book and put into new ask and bid offers
     """
     order_book = OrderBook()
 
@@ -60,3 +66,18 @@ def order_book_with_both_offers() -> OrderBook:
     order_book.offer_id = 2
 
     yield order_book
+
+
+@pytest.fixture
+def filled_order_book(new_order_book) -> OrderBook:
+    """
+    Functional fixture
+    Create new order book and fill it up with new ask and bid offers
+    """
+    book = new_order_book
+
+    for _ in range(book.depth):
+        book.add_offer('asks', randint(10, 50), randint(100, 200))
+        book.add_offer('bids', randint(10, 50), randint(100, 200))
+
+    yield book

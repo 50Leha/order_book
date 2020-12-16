@@ -71,10 +71,13 @@ class OrderBook:
         if quantity <= 0:
             raise ParamValueException
 
-        if len(self.asks) == self.depth:
-                raise TradeTypeOverflowedException
+        try:
+            self.relations[trade_type]
 
-        if len(self.bids) == self.depth:
+        except KeyError:
+            raise ParamValueException
+
+        if len(self.relations[trade_type]) == self.depth:
                 raise TradeTypeOverflowedException
 
         market_lot = {
@@ -82,14 +85,11 @@ class OrderBook:
             'quantity': quantity,
         }
 
-        try:
-            self.relations[trade_type][self.offer_id] = market_lot
-            self.offer_id += 1
+        self.offer_id += 1
+        self.relations[trade_type][self.offer_id] = market_lot
 
-            return self.offer_id
+        return self.offer_id
 
-        except KeyError:
-            raise ParamValueException
 
     def purge_offer(self, item_id: int = None) -> Dict[str, Union[int, float]]:
         """

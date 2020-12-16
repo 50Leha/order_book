@@ -53,6 +53,26 @@ def test_create_book_negative_depth() -> NoReturn:
         book = OrderBook(-1)
 
 
+def test_create_two_books() -> NoReturn:
+    """
+    Create two different order book at once
+    """
+    book1 = OrderBook(10)
+    book2 = OrderBook(15)
+
+    assert book1.depth == 10
+    assert book2.depth == 15
+
+    assert book1.offer_id == 0
+    assert book2.offer_id == 0
+
+    assert not book1.asks
+    assert not book1.bids
+
+    assert not book2.asks
+    assert not book2.bids
+
+
 def test_add_offer_ask_trade_type(new_order_book: Callable[[], OrderBook]) -> NoReturn:
     """
     Add new offer into asks
@@ -68,8 +88,8 @@ def test_add_offer_ask_trade_type(new_order_book: Callable[[], OrderBook]) -> No
     assert book.offer_id == 1
     assert book.offer_id == item_id
 
-    assert book.asks[book.offer_id - 1]['price'] == price
-    assert book.asks[book.offer_id - 1]['quantity'] == quantity
+    assert book.asks[book.offer_id]['price'] == price
+    assert book.asks[book.offer_id]['quantity'] == quantity
 
     assert not book.bids
 
@@ -89,8 +109,8 @@ def test_add_offer_bid_trade_type(new_order_book: Callable[[], OrderBook]) -> No
     assert book.offer_id == 1
     assert book.offer_id == item_id
 
-    assert book.bids[book.offer_id - 1]['price'] == price
-    assert book.bids[book.offer_id - 1]['quantity'] == quantity
+    assert book.bids[book.offer_id]['price'] == price
+    assert book.bids[book.offer_id]['quantity'] == quantity
 
     assert not book.asks
 
@@ -137,8 +157,8 @@ def test_add_offer_float_price(new_order_book: Callable[[], OrderBook]) -> NoRet
     assert book.offer_id == 1
     assert book.offer_id == item_id
 
-    assert book.asks[book.offer_id - 1]['price'] == price
-    assert book.asks[book.offer_id - 1]['quantity'] == quantity
+    assert book.asks[book.offer_id]['price'] == price
+    assert book.asks[book.offer_id]['quantity'] == quantity
 
     assert not book.bids
 
