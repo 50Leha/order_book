@@ -43,7 +43,7 @@ class OrderBook:
         trade_type: str = None,
         price: Union[int, float] = None,
         quantity: int = None
-        ) -> Union[int, str]:
+        ) -> int:
         """
         Add offer in the order book.
 
@@ -91,15 +91,15 @@ class OrderBook:
         except KeyError:
             raise ParamValueException
 
-    def purge_offer(self, item_id: int = None) -> Union[None, str]:
+    def purge_offer(self, item_id: int = None) -> Dict[str, Union[int, float]]:
         """
         Purge offer from the order book by its id
 
         :param item_id: offer id
         :type: Integer
 
-        :return: None or error message.
-        :rtype: [None, String]
+        :return: Purged offer
+        :rtype: Dictionary
         """
         if type(item_id) != int:
             raise ParamTypeException
@@ -119,6 +119,9 @@ class OrderBook:
 
         :param item_id: offer id
         :type: Integer
+
+        :return: ask or bid offer
+        :type: Dictionary
         """
         if type(item_id) != int:
             raise ParamTypeException
