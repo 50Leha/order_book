@@ -1,11 +1,28 @@
-"""Main module for Order Book project"""
+"""
+Main module for Order Book project
+
+OrderBook is a simplified order book model. It implements the following methods:
+
+- add_offer - adds a new lot to asks or bids depending on the passed parameters.
+Method receives trade type, price and quantity as input.
+
+- purge_offer - removes a lot from the order book.
+Receives the id of the lot position, returns the lot object containing
+the parameters price, quantity.
+
+- get_offers_data - returns the lot object containing the parameters price, quantity.
+Receives the id of the lot position.
+
+- get_market_snapshot - generates a snapshot of asks and bids sorted in ascending order of the lot price.
+"""
 
 from collections import namedtuple
 import copy
 from typing import Dict, List, Union
 
 from order_book.exceptions import (
-    InvalidDepthException, ParamTypeException, ParamValueException, NoElementException, TradeTypeOverflowedException,
+    InvalidDepthException, ParamTypeException, ParamValueException,
+    NoElementException, TradeTypeOverflowedException
 )
 
 
@@ -47,7 +64,8 @@ class OrderBook:
         """
         Add offer in the order book.
 
-        :param trade_type: a type of trade, where the offer will be placed. Available trade types: asks, bids
+        :param trade_type: a type of trade, where the offer will be placed.
+        Available trade types: asks, bids
         :type: String
 
         :param price: offer price
@@ -56,8 +74,8 @@ class OrderBook:
         :param quantity: amount of lots
         :type: Integer
 
-        :return: offer id or None
-        :rtype: [Integer, String]
+        :return: offer id
+        :rtype: Integer
         """
         if type(price) not in {int, float}:
             raise ParamTypeException
